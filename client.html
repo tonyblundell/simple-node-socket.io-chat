@@ -1,0 +1,87 @@
+<html>
+    <body>
+
+        <form id="message-form">
+            <input id="message-input" type="text" size="60" />
+            <input type="submit" value="Send" />
+        </form>
+
+        <div id="messages"></div>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+
+            $(document).ready(function() {
+
+                // Create a connection to the server
+                var socket = io.connect("http://192.168.1.67:1337");
+                
+                
+                /*
+                    Join the chat-room
+                    ------------------
+                */
+                (function join() {
+
+                    // Grab a nickname from the user and send it to the server
+                    var nick = prompt("Enter a nickname:");
+                    if (nick) {
+
+                        socket.emit("join", nick, function(successful) {
+
+                            // If the nickname was accepted, set-up the chat client
+                            if (successful) {
+
+
+                                /*
+                                    Handle chat message submission
+                                    ------------------------------
+                                */
+                                $("#message-form").submit(function(ev) {
+                                    // Prevent the browser from submitting the form via HTTP
+                                    ev.preventDefault();
+                                    // Send the message to the server
+                                    socket.emit("chat", $("#message-input").val());
+                                    // Clear the text-box
+                                    $("#message-input").val("");
+                                });
+
+
+                                /*
+                                    Handle receipt of chat messages
+                                    ---------------------------------
+                                */
+                                socket.on("chat", function(message) {
+                                    // Inject the message into the DOM
+                                    $("#messages").prepend("<div>" + message + "</div>");
+                                });
+
+
+                                /*
+                                    Handle server disconnection
+                                    ---------------------------
+                                */
+                                socket.on("disconnect", function() {
+                                    alert("The server went away")
+                                });
+
+
+                            // If the nickname wasn't accepted, ask for another and try again
+                            } else {
+                                alert("Nickname already in use");
+                                join();
+                            }
+                        });
+                    
+                    // If a nickname wasn't provided, ask again
+                    } else {
+                        join();
+                    }
+                    
+                })();
+                
+            });
+        </script>
+    </body>
+</html>
