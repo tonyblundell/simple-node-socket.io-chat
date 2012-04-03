@@ -40,7 +40,11 @@ io.sockets.on("connection", function(socket) {
             // Add the nickname to the global list
             clients.push(nick);
             // Send a message to all clients that a new user has joined
-            io.sockets.emit("chat", nick + " has joined");
+            socket.broadcast.emit("user-joined", nick);
+            // Send the client a list of currently connected users
+            socket.emit("all-users", clients);
+            // Send the client a welcome message
+            socket.emit("system-message", "Welcome to the chat room!")
 
         // If the nickname is already in use, reject the request to join
         } else {
@@ -59,7 +63,7 @@ io.sockets.on("connection", function(socket) {
         // and that the message isn't just an empty string,
         // then foward the message to all clients
         if (socket.nick && message) {
-            io.sockets.emit("chat", socket.nick + ": " + message);
+            io.sockets.emit("chat", {sender: socket.nick, message: message});
         }
     });
 
@@ -73,8 +77,8 @@ io.sockets.on("connection", function(socket) {
         if (socket.nick) {
             // Remove the client from the global list
             clients.splice(clients.indexOf(socket.nick), 1);
-            // Send a message to all remaining clients
-            io.sockets.emit("chat", socket.nick + " has left");
+            // Let all the remaining clients know of the disconnect
+            io.sockets.emit("user-left", socket.nick);
         }
     });
 

@@ -1,8 +1,12 @@
 <html>
     <body>
 
+        <p>
+            Users: <span id="users"></span>
+        </p>
+
         <form id="message-form">
-            <input id="message-input" type="text" size="60" />
+            <span id="nick"></span>: <input id="message-input" type="text" size="60" />
             <input type="submit" value="Send" />
         </form>
 
@@ -33,10 +37,13 @@
                             // If the nickname was accepted, set-up the chat client
                             if (successful) {
 
+                                // Display the nickname on the page
+                                $("#nick").text(nick);
+
 
                                 /*
-                                    Handle chat message submission
-                                    ------------------------------
+                                    Send chat messages
+                                    ------------------
                                 */
                                 $("#message-form").submit(function(ev) {
                                     // Prevent the browser from submitting the form via HTTP
@@ -49,12 +56,58 @@
 
 
                                 /*
-                                    Handle receipt of chat messages
-                                    ---------------------------------
+                                    Handle chat messages
+                                    --------------------
                                 */
                                 socket.on("chat", function(message) {
                                     // Inject the message into the DOM
-                                    $("#messages").prepend("<div>" + message + "</div>");
+                                    $("#messages").prepend("<div><b>" + message.sender + "</b>: " + message.message + "</div>");
+                                });
+
+
+                                /*
+                                    Handle system messages
+                                    ----------------------
+                                */
+                                socket.on("system-message", function(message) {
+                                    // Inject the message into the DOM
+                                    $("#messages").prepend("<div><i>" + message + "</i></div>");
+                                });
+
+
+                                /*
+                                    Handle a list of connected users
+                                    --------------------------------
+                                */
+                                socket.on("all-users", function(users) {
+                                    // Inject the list into the DOM
+                                    $.each(users, function(i, user) {
+                                        $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
+                                    });
+                                })
+
+
+                                /*
+                                    Handle users joining
+                                    --------------------
+                                */
+                                socket.on("user-joined", function(user) {
+                                    // Add to the on-page list of users
+                                    $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
+                                    // Display a message in the main chat stream
+                                    $("#messages").prepend("<div><i>" + user + " joined</i></div>");
+                                });
+
+
+                                /*
+                                    Handle users leaving
+                                    --------------------
+                                */
+                                socket.on("user-left", function(user) {
+                                    // Remove from the on-age list of users
+                                    $("#user-" + user).remove();
+                                    // Display a message in the main chat stream
+                                    $("#messages").prepend("<div><i>" + user + " left</i></div>");
                                 });
 
 
