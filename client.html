@@ -45,7 +45,20 @@
             <ul id="users"></ul>
         </div>
 
+        <script id="userTemplate" type="text/x-jquery-tmpl">
+            <li id="user-${user}">${user}</li>
+        </script>
+
+        <script id="chatMessageTemplate" type="text/x-jquery-tmpl">
+            <li><span class="sender">${sender}</span>: ${message}</li>
+        </script>
+
+        <script id="systemMessageTemplate" type="text/x-jquery-tmpl">
+            <li class="system-message">${message}</li>
+        </script>
+
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script>
 
@@ -55,7 +68,7 @@
                 var socket = io.connect("http://192.168.1.67:1337");
 
                 /*
-                    Handle submission of the join form
+                    Handle submission of the join form, try to join the chat-room
                 */
                 $("#join-form").submit(function(ev) {
 
@@ -75,11 +88,11 @@
                                 $("#chat").show();
 
                                 // Display a welcome message
-                                $("#messages").append('<li class="system-message">Welcome, ' + nick + '</li>');
+                                $("#systemMessageTemplate").tmpl({message: "Welcome, " + nick}).appendTo("#messages");
 
                                 // Display the list of connected users on the page
                                 $.each(users, function(i, user) {
-                                    $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
+                                    $("#userTemplate").tmpl({user: user}).appendTo("#users");
                                 });
 
                                 // Give focus to the message input so the user can start entering a message
@@ -109,7 +122,7 @@
                                 socket.on("chat", function(message) {
 
                                     // Inject the message into the DOM
-                                    $("#messages").append('<li><span class="sender">' + message.sender + '</span>: ' + message.message + '</li>');
+                                    $("#chatMessageTemplate").tmpl(message).appendTo("#messages");
 
                                     // Auto-scroll the message pane
                                     $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
@@ -127,7 +140,10 @@
                                     $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
 
                                     // Display a message in the main chat stream
-                                    $("#messages").append('<li class="system-message">' + user + ' joined</li>');
+                                    $("#systemMessageTemplate").tmpl({message: user + " joined"}).appendTo("#messages");
+
+                                    // Auto-scroll the message pane
+                                    $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
 
                                 });
 
@@ -142,7 +158,10 @@
                                     $("#user-" + user).remove();
 
                                     // Display a message in the main chat stream
-                                    $("#messages").append('<li class="message system-message">' + user + ' left</li>');
+                                    $("#systemMessageTemplate").tmpl({message: user + " left"}).appendTo("#messages");
+
+                                    // Auto-scroll the message pane
+                                    $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
 
                                 });
 
