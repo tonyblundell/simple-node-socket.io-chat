@@ -3,10 +3,14 @@
         <link rel="stylesheet" href="http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css" />
         <style type="text/css">
             body { font-family: sans-serif; }
+            #join-form { margin: 1em; }
+            #nick-input { margin-bottom: 1em; }
+            #nick-error { display: none; color: #d00; }
+            #chat { display: none; }
             #main { width: 80%; height: 100%; float: left; }
-            #messages { height: 90%; border-bottom: 1px solid #999; margin-top: 0px; overflow-y: scroll; }
+            #messages { height: 90%; border-bottom: 1px solid #999; overflow-y: scroll; }
             #message-form { height: 10%; }
-            #message-input { width: 100%; height: 100%; padding: 0 10px; border: none; outline: none; }
+            #message-input { width: 100%; height: 100%; padding: 0 1em; border: none; outline: none; }
             #users { width: 20%; height: 100%; float: left; background-color: #ddd; }
             .sender { font-weight: bold; }
             .system-message { font-style: italic; }
@@ -15,15 +19,23 @@
 
     <body>
 
-        <div id="main">
-            <ul id="messages">
+        <form id="join-form">
+            <label for="nick-input">Choose a nickname:</label><br />
+            <input id="nick-input" />
+            <div id="nick-error">That nickname is already in use, please choose something different.</div>
+        </form>
+
+        <div id="chat">
+            <div id="main">
+                <ul id="messages">
+                </ul>
+                <form id="message-form">
+                    <input id="message-input" />
+                </form>
+            </div>
+            <ul id="users">
             </ul>
-            <form id="message-form">
-                <input id="message-input" />
-            </form>
         </div>
-        <ul id="users">
-        </ul>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
@@ -33,22 +45,26 @@
 
                 // Create a connection to the server
                 var socket = io.connect("http://192.168.1.67:1337");
-                
-                
-                /*
-                    Join the chat-room
-                    ------------------
-                */
-                (function join() {
 
-                    // Grab a nickname from the user and send it to the server
-                    var nick = prompt("Enter a nickname:");
+                /*
+                    Handle submission of the join form
+                */
+                $("#join-form").submit(function(ev) {
+
+                    // Prevent the browser from submitting the form via HTTP
+                    ev.preventDefault();
+
+                    // Check that a nickname has been entered
+                    var nick = $("#nick-input").val();
                     if (nick) {
 
+                        // Send a request to join the chat-room
                         socket.emit("join", nick, function(successful, users) {
-
-                            // If the nickname was accepted, set-up the chat client
                             if (successful) {
+
+                                // Hide the join form and show the main chat interface
+                                $("#join-form").hide();
+                                $("#chat").show();
 
                                 // Display a welcome message
                                 $("#messages").append('<li class="system-message">Welcome, ' + nick + '</li>');
@@ -69,8 +85,10 @@
                                 $("#message-form").submit(function(ev) {
                                     // Prevent the browser from submitting the form via HTTP
                                     ev.preventDefault();
+
                                     // Send the message to the server
                                     socket.emit("chat", $("#message-input").val());
+
                                     // Clear the text-box
                                     $("#message-input").val("");
                                 });
@@ -83,20 +101,9 @@
                                 socket.on("chat", function(message) {
                                     // Inject the message into the DOM
                                     $("#messages").append('<li><span class="sender">' + message.sender + '</span>: ' + message.message + '</li>');
+
                                     // Auto-scroll the message pane
                                     $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
-                                });
-
-
-                                /*
-                                    Handle system messages
-                                    ----------------------
-                                */
-                                socket.on("system-message", function(message) {
-                                    // Inject the message into the DOM
-                                    $("#messages").append('<li class="system-message">' + message + '</li>');
-                                    // Auto-scroll the message pane
-                                    $("#messages").prop("scrollTop", $("#messages").attr("scrollHeight") - $("#messages").height());
                                 });
 
 
@@ -107,6 +114,7 @@
                                 socket.on("user-joined", function(user) {
                                     // Add to the on-page list of users
                                     $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
+
                                     // Display a message in the main chat stream
                                     $("#messages").append('<li class="system-message">' + user + ' joined</li>');
                                 });
@@ -119,33 +127,19 @@
                                 socket.on("user-left", function(user) {
                                     // Remove from the on-page list of users
                                     $("#user-" + user).remove();
+
                                     // Display a message in the main chat stream
                                     $("#messages").append('<li class="message system-message">' + user + ' left</li>');
                                 });
 
 
-                                /*
-                                    Handle server disconnection
-                                    ---------------------------
-                                */
-                                socket.on("disconnect", function() {
-                                    alert("The server went away")
-                                });
-
-
-                            // If the nickname wasn't accepted, ask for another and try again
+                            // If the request to join was rejected, show an error message
                             } else {
-                                alert("Nickname already in use");
-                                join();
+                                $("#nick-error").show();
                             }
                         });
-                    
-                    // If a nickname wasn't provided, ask again
-                    } else {
-                        join();
                     }
-                    
-                })();
+                });                
                 
             });
         </script>
