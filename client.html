@@ -32,13 +32,18 @@
                     var nick = prompt("Enter a nickname:");
                     if (nick) {
 
-                        socket.emit("join", nick, function(successful) {
+                        socket.emit("join", nick, function(successful, users) {
 
                             // If the nickname was accepted, set-up the chat client
                             if (successful) {
 
                                 // Display the nickname on the page
                                 $("#nick").text(nick);
+
+                                // Display the list of connected users on the page
+                                $.each(users, function(i, user) {
+                                    $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
+                                });
 
 
                                 /*
@@ -76,18 +81,6 @@
 
 
                                 /*
-                                    Handle a list of connected users
-                                    --------------------------------
-                                */
-                                socket.on("all-users", function(users) {
-                                    // Inject the list into the DOM
-                                    $.each(users, function(i, user) {
-                                        $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
-                                    });
-                                })
-
-
-                                /*
                                     Handle users joining
                                     --------------------
                                 */
@@ -104,7 +97,7 @@
                                     --------------------
                                 */
                                 socket.on("user-left", function(user) {
-                                    // Remove from the on-age list of users
+                                    // Remove from the on-page list of users
                                     $("#user-" + user).remove();
                                     // Display a message in the main chat stream
                                     $("#messages").prepend("<div><i>" + user + " left</i></div>");

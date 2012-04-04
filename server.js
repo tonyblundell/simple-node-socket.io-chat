@@ -1,4 +1,4 @@
-// Load dependencias and start the server
+// Load dependencies and start the server
 var app = require("express").createServer().listen(1337);
 var io = require("socket.io").listen(app);
 var fs = require("fs");
@@ -33,18 +33,16 @@ io.sockets.on("connection", function(socket) {
 
         // If the nickname isn't in use, join the user
         if (clients.indexOf(nick) < 0) {
-            // Notify client via callback that the request has been accepted
-            callback(true);
             // Store the nickname, we'll use it when sending messages
             socket.nick = nick;
             // Add the nickname to the global list
             clients.push(nick);
             // Send a message to all clients that a new user has joined
             socket.broadcast.emit("user-joined", nick);
-            // Send the client a list of currently connected users
-            socket.emit("all-users", clients);
             // Send the client a welcome message
             socket.emit("system-message", "Welcome to the chat room!")
+            // Callback to the user with a successful flag and the list of clients
+            callback(true, clients);
 
         // If the nickname is already in use, reject the request to join
         } else {
