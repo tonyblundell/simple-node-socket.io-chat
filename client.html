@@ -4,11 +4,18 @@
         <title>Chat</title>
         <link rel="stylesheet" href="http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css">
         <style type="text/css">
+
+            /* Global */
+            html, body { height: 100%; }
             body { font-family: sans-serif; }
+
+            /* Join form */
             #join-form { margin: 1em; }
             #nick-input { margin-bottom: 1em; }
             #nick-error { display: none; color: #d00; }
-            #chat { display: none; }
+
+            /* Chat */
+            #chat { display: none; height: 100%; }
             #main { width: 80%; height: 100%; float: left; }
             #messages { height: 90%; border-bottom: 1px solid #999; overflow-y: scroll; }
             #message-form { height: 10%; }
@@ -16,6 +23,7 @@
             #users { width: 20%; height: 100%; float: left; background-color: #ddd; }
             .sender { font-weight: bold; }
             .system-message { font-style: italic; }
+
         </style>
     </head>
 
@@ -29,14 +37,12 @@
 
         <div id="chat">
             <div id="main">
-                <ul id="messages">
-                </ul>
+                <ul id="messages"></ul>
                 <form id="message-form">
                     <input id="message-input" />
                 </form>
             </div>
-            <ul id="users">
-            </ul>
+            <ul id="users"></ul>
         </div>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -101,11 +107,13 @@
                                     --------------------
                                 */
                                 socket.on("chat", function(message) {
+
                                     // Inject the message into the DOM
                                     $("#messages").append('<li><span class="sender">' + message.sender + '</span>: ' + message.message + '</li>');
 
                                     // Auto-scroll the message pane
                                     $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+
                                 });
 
 
@@ -114,11 +122,13 @@
                                     --------------------
                                 */
                                 socket.on("user-joined", function(user) {
+
                                     // Add to the on-page list of users
                                     $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
 
                                     // Display a message in the main chat stream
                                     $("#messages").append('<li class="system-message">' + user + ' joined</li>');
+
                                 });
 
 
@@ -127,11 +137,13 @@
                                     --------------------
                                 */
                                 socket.on("user-left", function(user) {
+
                                     // Remove from the on-page list of users
                                     $("#user-" + user).remove();
 
                                     // Display a message in the main chat stream
                                     $("#messages").append('<li class="message system-message">' + user + ' left</li>');
+
                                 });
 
 
