@@ -39,8 +39,6 @@ io.sockets.on("connection", function(socket) {
             clients.push(nick);
             // Send a message to all clients that a new user has joined
             socket.broadcast.emit("user-joined", nick);
-            // Send the client a welcome message
-            socket.emit("system-message", "Welcome to the chat room!")
             // Callback to the user with a successful flag and the list of clients
             callback(true, clients);
 

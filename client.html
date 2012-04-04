@@ -1,16 +1,29 @@
 <html>
+    <head>
+        <link rel="stylesheet" href="http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css" />
+        <style type="text/css">
+            body { font-family: sans-serif; }
+            #main { width: 80%; height: 100%; float: left; }
+            #messages { height: 90%; border-bottom: 1px solid #999; margin-top: 0px; overflow-y: scroll; }
+            #message-form { height: 10%; }
+            #message-input { width: 100%; height: 100%; padding: 0 10px; border: none; outline: none; }
+            #users { width: 20%; height: 100%; float: left; background-color: #ddd; }
+            .sender { font-weight: bold; }
+            .system-message { font-style: italic; }
+        </style>
+    </head>
+
     <body>
 
-        <p>
-            Users: <span id="users"></span>
-        </p>
-
-        <form id="message-form">
-            <span id="nick"></span>: <input id="message-input" type="text" size="60" />
-            <input type="submit" value="Send" />
-        </form>
-
-        <div id="messages"></div>
+        <div id="main">
+            <ul id="messages">
+            </ul>
+            <form id="message-form">
+                <input id="message-input" />
+            </form>
+        </div>
+        <ul id="users">
+        </ul>
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
@@ -37,13 +50,16 @@
                             // If the nickname was accepted, set-up the chat client
                             if (successful) {
 
-                                // Display the nickname on the page
-                                $("#nick").text(nick);
+                                // Display a welcome message
+                                $("#messages").append('<li class="system-message">Welcome, ' + nick + '</li>');
 
                                 // Display the list of connected users on the page
                                 $.each(users, function(i, user) {
-                                    $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
+                                    $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
                                 });
+
+                                // Give focus to the message input so the user can start entering a message
+                                $("#message-input").focus();
 
 
                                 /*
@@ -66,7 +82,9 @@
                                 */
                                 socket.on("chat", function(message) {
                                     // Inject the message into the DOM
-                                    $("#messages").prepend("<div><b>" + message.sender + "</b>: " + message.message + "</div>");
+                                    $("#messages").append('<li><span class="sender">' + message.sender + '</span>: ' + message.message + '</li>');
+                                    // Auto-scroll the message pane
+                                    $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
                                 });
 
 
@@ -76,7 +94,9 @@
                                 */
                                 socket.on("system-message", function(message) {
                                     // Inject the message into the DOM
-                                    $("#messages").prepend("<div><i>" + message + "</i></div>");
+                                    $("#messages").append('<li class="system-message">' + message + '</li>');
+                                    // Auto-scroll the message pane
+                                    $("#messages").prop("scrollTop", $("#messages").attr("scrollHeight") - $("#messages").height());
                                 });
 
 
@@ -86,9 +106,9 @@
                                 */
                                 socket.on("user-joined", function(user) {
                                     // Add to the on-page list of users
-                                    $("#users").append('<span id="user-' + user + '">' + user + ' </span>');
+                                    $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
                                     // Display a message in the main chat stream
-                                    $("#messages").prepend("<div><i>" + user + " joined</i></div>");
+                                    $("#messages").append('<li class="system-message">' + user + ' joined</li>');
                                 });
 
 
@@ -100,7 +120,7 @@
                                     // Remove from the on-page list of users
                                     $("#user-" + user).remove();
                                     // Display a message in the main chat stream
-                                    $("#messages").prepend("<div><i>" + user + " left</i></div>");
+                                    $("#messages").append('<li class="message system-message">' + user + ' left</li>');
                                 });
 
 
