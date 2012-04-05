@@ -10,14 +10,14 @@
             body { font-family: sans-serif; }
 
             /* Join form */
-            #join-form { margin: 1em; }
+            #join-form { padding: 1em; }
             #nick-input { margin-bottom: 1em; }
             #nick-error { display: none; color: #d00; }
 
             /* Chat */
             #chat { display: none; height: 100%; }
             #main { width: 80%; height: 100%; float: left; }
-            #messages { height: 90%; border-bottom: 1px solid #999; overflow-y: scroll; }
+            #messages { height: 90%; border-bottom: 1px solid #999; margin-top: -1px; overflow-y: scroll; }
             #message-form { height: 10%; }
             #message-input { width: 100%; height: 100%; padding: 0 1em; border: none; outline: none; }
             #users { width: 20%; height: 100%; float: left; background-color: #ddd; }
@@ -88,7 +88,8 @@
                                 $("#chat").show();
 
                                 // Display a welcome message
-                                $("#systemMessageTemplate").tmpl({message: "Welcome, " + nick}).appendTo("#messages");
+                                var message = "Welcome, " + nick;
+                                $("#systemMessageTemplate").tmpl({message: message}).appendTo("#messages");
 
                                 // Display the list of connected users on the page
                                 $.each(users, function(i, user) {
@@ -140,7 +141,8 @@
                                     $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
 
                                     // Display a message in the main chat stream
-                                    $("#systemMessageTemplate").tmpl({message: user + " joined"}).appendTo("#messages");
+                                    var message = user + " joined";
+                                    $("#systemMessageTemplate").tmpl({message: message}).appendTo("#messages");
 
                                     // Auto-scroll the message pane
                                     $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
@@ -158,7 +160,8 @@
                                     $("#user-" + user).remove();
 
                                     // Display a message in the main chat stream
-                                    $("#systemMessageTemplate").tmpl({message: user + " left"}).appendTo("#messages");
+                                    var message = user + " left";
+                                    $("#systemMessageTemplate").tmpl({message: message}).appendTo("#messages");
 
                                     // Auto-scroll the message pane
                                     $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
