@@ -33,18 +33,21 @@ io.sockets.on("connection", function(socket) {
 
         // If the nickname isn't in use, join the user
         if (clients.indexOf(nick) < 0) {
+
             // Store the nickname, we'll use it when sending messages
             socket.nick = nick;
+
             // Add the nickname to the global list
             clients.push(nick);
+
             // Send a message to all clients that a new user has joined
             socket.broadcast.emit("user-joined", nick);
+
             // Callback to the user with a successful flag and the list of clients
             callback(true, clients);
 
         // If the nickname is already in use, reject the request to join
         } else {
-            // Notify the client via callback that the request was unsuccessful
             callback(false);
         }
     });
