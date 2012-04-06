@@ -1,8 +1,6 @@
 simple node socket.io chat
 ==========================
 
-Simple chat app using node and socket.io
-
-Requires express and socket.io
+Simple real-time chat app demo built with node and socket.io
 
 See comments within source-code

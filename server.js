@@ -1,28 +1,31 @@
-// Load dependencies and start the server
-var app = require("express").createServer().listen(1337);
-var io = require("socket.io").listen(app);
+/*
+    Keep a global list of currently connected clients
+    -----------------------------------------------
+*/
+var clients = [];
+
+
+
+/*
+    Create an http server to serve the client.html file
+    ---------------------------------------------------
+*/
+var http = require("http");
 var fs = require("fs");
-
-
-// Global list of currently connected clients
-var clients = []
-
-
-/*
-    Handle requests for the index page, send the HTML straight from disk
-    --------------------------------------------------------------------
-*/
-app.get("/", function(request, response) {
-    fs.readFile(__dirname + "/client.html", "utf8", function(err, text){
-        response.end(text);
+var httpServer = http.createServer(function(request, response) {
+    fs.readFile(__dirname + "/client.html", "utf8", function(error, content) {
+        response.writeHeader(200, {"Content-Type": "text/html"});
+        response.end(content);
     });
-});
+}).listen(1337);
+
 
 
 /*
-    Handle connections via socket.io
-    --------------------------------
+    Listen for and handle socket.io connections
+    -------------------------------------------
 */
+var io = require("socket.io").listen(httpServer);
 io.sockets.on("connection", function(socket) {
 
     /*
