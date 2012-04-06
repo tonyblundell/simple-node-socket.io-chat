@@ -138,7 +138,7 @@
                                 socket.on("user-joined", function(user) {
 
                                     // Add to the on-page list of users
-                                    $("#users").append('<li id="user-' + user + '">' + user + ' </li>');
+                                    $("#userTemplate").tmpl({user: user}).appendTo("#users");
 
                                     // Display a message in the main chat stream
                                     var message = user + " joined";
