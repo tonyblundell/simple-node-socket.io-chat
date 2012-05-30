@@ -20,13 +20,22 @@ var httpServer = http.createServer(function(request, response) {
 }).listen(process.env.PORT || 1337);
 
 
-
 /*
     Listen for and handle socket.io connections
     -------------------------------------------
 */
 var io = require("socket.io").listen(httpServer);
+
+// Hack to turn off WebSockets on Heroku
+if (process.env.is_heroku) {
+    io.configure(function () { 
+        io.set("transports", ["xhr-polling"]); 
+        io.set("polling duration", 10); 
+    });
+}
+
 io.sockets.on("connection", function(socket) {
+
 
     /*
         Handle requests to join the chat-room
