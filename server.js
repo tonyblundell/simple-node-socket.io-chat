@@ -17,7 +17,7 @@ var httpServer = http.createServer(function(request, response) {
         response.writeHeader(200, {"Content-Type": "text/html"});
         response.end(content);
     });
-}).listen(process.env.port || 1337);
+}).listen(process.env.PORT || 1337);
 
 
 
