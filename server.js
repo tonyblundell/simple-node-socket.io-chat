@@ -25,15 +25,6 @@ var httpServer = http.createServer(function(request, response) {
     -------------------------------------------
 */
 var io = require("socket.io").listen(httpServer);
-
-// Hack to turn off WebSockets on Heroku
-if (process.env.IS_HEROKU) {
-    io.configure(function () { 
-        io.set("transports", ["xhr-polling"]); 
-        io.set("polling duration", 10); 
-    });
-}
-
 io.sockets.on("connection", function(socket) {
 
 
